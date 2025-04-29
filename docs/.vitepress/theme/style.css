@@ -1,0 +1,132 @@
+/**
+ * 通过覆盖 CSS 变量自定义默认主题样式：
+ * 参考：https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
+ */
+
+/**
+ * 颜色配置
+ *
+ * 每种颜色有三个亮度级别的纯色（1、2、3）和一个柔和色（soft）。
+ *
+ * - `XXX-1`：最深的颜色，主要用于文本（如链接、强调文字）。需确保在 `XXX-soft` 背景上的对比度符合可读性标准。
+ *   修改效果：改变文本颜色，影响链接、标题等。
+ *
+ * - `XXX-2`：用于按钮悬停状态的颜色，亮度适中。
+ *   修改效果：调整按钮悬停时的颜色，影响交互体验。
+ *
+ * - `XXX-3`：用于纯色背景（如按钮背景）。需确保与白色文字 (#ffffff) 的对比度。
+ *   修改效果：改变按钮、标签等背景色。
+ *
+ * - `XXX-soft`：柔和背景色，用于容器、徽章等。必须是半透明（带 alpha 通道），以支持多层叠加（如代码块在容器内）。
+ *   修改效果：调整背景透明度或色调，影响容器、代码块背景。
+ *
+ * 颜色类型：
+ * - `default`：无特殊含义的默认颜色，用于菜单悬停等微妙提示。
+ *   修改效果：改变菜单、边框等的默认样式。
+ * - `brand`：品牌主色，用于链接、品牌按钮等。
+ *   修改效果：定义站点主色调，影响整体视觉风格。
+ * - `tip`：提示信息颜色，默认使用品牌色。
+ *   修改效果：调整提示框（如 `::: tip`）的颜色。
+ * - `warning`：警告信息颜色，用于警告容器、徽章等。
+ *   修改效果：改变警告框的视觉效果。
+ * - `danger`：错误或危险信息颜色，用于错误容器、徽章等。
+ *   修改效果：调整错误提示的颜色。
+ * -------------------------------------------------------------------------- */
+
+:root {
+  /* 默认颜色（灰色系） */
+  --vp-c-default-1: var(--vp-c-gray-1); /* 默认深色文本，修改后影响普通文本颜色 */
+  --vp-c-default-2: var(--vp-c-gray-2); /* 默认悬停颜色，修改后影响菜单悬停效果 */
+  --vp-c-default-3: var(--vp-c-gray-3); /* 默认背景色，修改后影响背景区域 */
+  --vp-c-default-soft: var(--vp-c-gray-soft); /* 默认柔和背景，修改后影响微妙背景区域 */
+
+  /* 品牌颜色（靛蓝色系） */
+  --vp-c-brand-1: var(--vp-c-indigo-1); /* 品牌深色文本，修改后影响链接、强调文字 */
+  --vp-c-brand-2: var(--vp-c-indigo-2); /* 品牌悬停颜色，修改后影响按钮悬停 */
+  --vp-c-brand-3: var(--vp-c-indigo-3); /* 品牌背景色，修改后影响按钮背景 */
+  --vp-c-brand-soft: var(--vp-c-indigo-soft); /* 品牌柔和背景，修改后影响容器背景 */
+
+  /* 提示颜色（默认复用品牌色） */
+  --vp-c-tip-1: var(--vp-c-brand-1); /* 提示文本色，修改后影响提示框文字 */
+  --vp-c-tip-2: var(--vp-c-brand-2); /* 提示悬停色，修改后影响提示框交互 */
+  --vp-c-tip-3: var(--vp-c-brand-3); /* 提示背景色，修改后影响提示框背景 */
+  --vp-c-tip-soft: var(--vp-c-brand-soft); /* 提示柔和背景，修改后影响提示框背景透明度 */
+
+  /* 警告颜色（黄色系） */
+  --vp-c-warning-1: var(--vp-c-yellow-1); /* 警告文本色，修改后影响警告框文字 */
+  --vp-c-warning-2: var(--vp-c-yellow-2); /* 警告悬停色，修改后影响警告框交互 */
+  --vp-c-warning-3: var(--vp-c-yellow-3); /* 警告背景色，修改后影响警告框背景 */
+  --vp-c-warning-soft: var(--vp-c-yellow-soft); /* 警告柔和背景，修改后影响警告框背景透明度 */
+
+  /* 危险颜色（红色系） */
+  --vp-c-danger-1: var(--vp-c-red-1); /* 危险文本色，修改后影响错误框文字 */
+  --vp-c-danger-2: var(--vp-c-red-2); /* 危险悬停色，修改后影响错误框交互 */
+  --vp-c-danger-3: var(--vp-c-red-3); /* 危险背景色，修改后影响错误框背景 */
+  --vp-c-danger-soft: var(--vp-c-red-soft); /* 危险柔和背景，修改后影响错误框背景透明度 */
+}
+
+/**
+ * 组件：按钮
+ * -------------------------------------------------------------------------- */
+
+:root {
+  /* 品牌按钮样式 */
+  --vp-button-brand-border: transparent; /* 按钮边框，设为透明则无边框，修改后可添加边框颜色 */
+  --vp-button-brand-text: var(--vp-c-white); /* 按钮文字颜色，修改后影响按钮文字 */
+  --vp-button-brand-bg: var(--vp-c-brand-3); /* 按钮背景色，修改后影响按钮默认背景 */
+  --vp-button-brand-hover-border: transparent; /* 悬停时边框，修改后影响悬停边框 */
+  --vp-button-brand-hover-text: var(--vp-c-white); /* 悬停时文字颜色，修改后影响悬停文字 */
+  --vp-button-brand-hover-bg: var(--vp-c-brand-2); /* 悬停时背景色，修改后影响悬停背景 */
+  --vp-button-brand-active-border: transparent; /* 激活时边框，修改后影响点击边框 */
+  --vp-button-brand-active-text: var(--vp-c-white); /* 激活时文字颜色，修改后影响点击文字 */
+  --vp-button-brand-active-bg: var(--vp-c-brand-1); /* 激活时背景色，修改后影响点击背景 */
+}
+
+/**
+ * 组件：首页
+ * -------------------------------------------------------------------------- */
+
+:root {
+  /* 首页英雄标题颜色与背景 */
+  --vp-home-hero-name-color: transparent; /* 标题文字颜色，设为透明以显示渐变背景，修改后可设为纯色 */
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff); /* 标题渐变背景，修改后改变标题颜色渐变效果 */
+
+  /* 首页英雄图片背景与模糊 */
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #bd34fe 50%, #47caff 50%); /* 图片背景渐变，修改后改变图片区域颜色 */
+  --vp-home-hero-image-filter: blur(44px); /* 图片模糊程度，修改后调整模糊效果（越大越模糊） */
+}
+
+/* 响应式设计：中等屏幕（≥640px） */
+@media (min-width: 640px) {
+  :root {
+    --vp-home-hero-image-filter: blur(56px); /* 中等屏幕下图片模糊度，修改后调整模糊效果 */
+  }
+}
+
+/* 响应式设计：大屏幕（≥960px） */
+@media (min-width: 960px) {
+  :root {
+    --vp-home-hero-image-filter: blur(68px); /* 大屏幕下图片模糊度，修改后调整模糊效果 */
+  }
+}
+
+/**
+ * 组件：自定义块
+ * -------------------------------------------------------------------------- */
+
+:root {
+  /* 提示块（::: tip）样式 */
+  --vp-custom-block-tip-border: transparent; /* 提示块边框，设为透明则无边框，修改后可添加边框 */
+  --vp-custom-block-tip-text: var(--vp-c-text-1); /* 提示块文字颜色，修改后影响提示文字 */
+  --vp-custom-block-tip-bg: var(--vp-c-brand-soft); /* 提示块背景色，修改后影响提示背景 */
+  --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft); /* 提示块内代码背景色，修改后影响代码块背景 */
+}
+
+/**
+ * 组件：Algolia 搜索
+ * -------------------------------------------------------------------------- */
+
+.DocSearch {
+  /* Algolia 搜索框主色 */
+  --docsearch-primary-color: var(--vp-c-brand-1) !important; /* 搜索框高亮颜色，修改后影响搜索框和结果的主题色 */
+}
