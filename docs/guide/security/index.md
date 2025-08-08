@@ -417,6 +417,7 @@ Active: active (running)
 ```
 ![firewalld防火墙](./security02.png)
 Firewalld高阶使用
+
 GeoIP和Firewalld组合使用的常见案例主要涉及到基于地理位置的防火墙规则。
 ## 12、安装自动封锁软件
 第 1 步 — 安装 Fail2ban

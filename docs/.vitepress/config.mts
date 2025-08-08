@@ -43,6 +43,7 @@ export default defineConfig({
             {
               text: '手动配置',
               items: [
+                { text: '概述', link: '/guide/overview/' },
                 { text: '系统初始化', link: '/guide/system-init/' },
                 { text: '安装管理面板', link: '/guide/install-cockpit/' },
                 { text: '系统调优', link: '/guide/system-optimize/' },
