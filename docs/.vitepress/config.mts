@@ -163,7 +163,8 @@ export default defineConfig({
             {
               text: '综合类别',
               items: [
-                { text: 'Scrutiny', link: '/docker/scrutiny/' }
+                { text: 'Scrutiny', link: '/docker/scrutiny/' },
+                { text: 'Chrome浏览器', link: '/docker/chrome-browser/' }
               ]
             }
           ]
