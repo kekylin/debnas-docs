@@ -59,7 +59,7 @@
 #### 5.4、备份与恢复
 - 实现备份docker，默认备份的文件有/var/lib/docker、/etc/docker和/opt/docker三个目录。  
 - docker_backup.conf 配置文件支持自定义备份参数，docker_backup.conf 文件可以存放在任意位置，备份时按脚本指示输入文件路径即可。  
-docker_backup.conf 配置文件地址：https://raw.githubusercontent.com/kekylin/Debian-HomeNAS/refs/heads/main/Docs/docker_backup.conf
+docker_backup.conf 配置文件地址：https://raw.githubusercontent.com/kekylin/debnas/refs/heads/main/config/docker_backup.conf
 
 - 恢复已备份的docker文件，支持清空恢复（先清空目标目录再恢复）和增量恢复（覆盖同名文件，保留目标目录中备份源没有的文件）。  
 ### 六、综合应用服务
