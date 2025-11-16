@@ -14,7 +14,7 @@ hero:
       link: /guide/getting-started
     - theme: alt
       text: Github
-      link: https://github.com/kekylin/Debian-HomeNAS
+      link: https://github.com/kekylin/debnas
 features:
   - title: 开源
     details: 项目基于 Debian，使用开源脚本和组件，用户可自由访问、修改和分发代码，促进透明与协作。

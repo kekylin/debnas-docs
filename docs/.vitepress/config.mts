@@ -24,34 +24,29 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: '什么是DebNAS', link: '/guide/what-is-debnas/' },
-            { text: '脚本介绍', link: '/guide/script-introduction/' },
+            { text: '项目概览', link: '/guide/project-overview/' },
             { text: '成果展示', link: '/guide/achievement/' }
           ]
         },
         {
-          text: '安装',
+          text: '脚本部署',
           collapsed: false,
           items: [
-            {
-              text: '安装系统',
-              items: [
-                { text: 'Debian', link: '/guide/debian-minimal-installation/' },
-                { text: 'Ubuntu', link: '/guide/ubuntu-minimal-installation/' }
-              ]
-            },
             { text: '快速开始', link: '/guide/getting-started/' },
-            {
-              text: '手动配置',
-              items: [
-                { text: '概述', link: '/guide/overview/' },
-                { text: '系统初始化', link: '/guide/system-init/' },
-                { text: '安装管理面板', link: '/guide/install-cockpit/' },
-                { text: '系统调优', link: '/guide/system-optimize/' },
-                { text: '安全防护', link: '/guide/security/' },
-                { text: '存储管理', link: '/guide/storage-management/' },
-                { text: '安装Docker', link: '/guide/install-docker/' }
-              ]
-            }
+            { text: '脚本介绍', link: '/guide/script-introduction/' }
+          ]
+        },
+        {
+          text: '手动部署',
+          collapsed: false,
+          items: [
+            { text: '系统安装', link: '/guide/debian-minimal-installation/' },
+            { text: '系统初始化', link: '/guide/system-init/' },
+            { text: '安装管理面板', link: '/guide/install-cockpit/' },
+            { text: '系统调优', link: '/guide/system-optimize/' },
+            { text: '安全防护', link: '/guide/security/' },
+            { text: '存储管理', link: '/guide/storage-management/' },
+            { text: '安装Docker', link: '/guide/install-docker/' }
           ]
         },
         {
@@ -63,14 +58,6 @@ export default defineConfig({
             { text: '启用SMB文件共享', link: '/guide/smb-sharing/' },
             { text: 'Nginx反代限制国外IP访问', link: '/guide/nginx-foreign-ip-block/' },
             { text: '内网穿透服务Tailscale', link: '/guide/tailscale-tunnel-service/' }
-          ]
-        },
-        {
-          text: '实用脚本',
-          collapsed: false,
-          items: [
-            { text: '自动更新 Hosts 脚本', link: '/guide/hosts-update/' },
-            { text: '安装 Tailscale 脚本', link: '/guide/install-tailscale/' }
           ]
         },
         {
