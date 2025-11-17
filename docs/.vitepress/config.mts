@@ -14,7 +14,7 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: 'DebNAS文档', link: '/guide/what-is-debnas/' },
-      { text: 'Docker教程', link: '/docker/dockerhub-mirror/' },
+      { text: 'Docker教程', link: '/docker/add-a-proxy/' },
       { text: '关于', link: '/about/disclaimer/' }
     ],
     sidebar: {
@@ -74,8 +74,6 @@ export default defineConfig({
           text: '实用配置',
           collapsed: false,
           items: [
-            { text: '镜像加速地址', link: '/docker/dockerhub-mirror/' },
-            { text: '修改默认存储', link: '/docker/default-storage/' },
             { text: '添加代理', link: '/docker/add-a-proxy/' }
           ]
         },
@@ -93,31 +91,25 @@ export default defineConfig({
             {
               text: '导航主页',
               items: [
-                { text: 'Homepage', link: '/docker/homepage/' },
-                { text: 'Heimdall', link: '/docker/heimdall/' }
+                { text: 'Homepage', link: '/docker/homepage/' }
               ]
             },
             {
               text: '系统监测',
               items: [
-                { text: 'Grafana', link: '/docker/grafana/' },
-                { text: 'Ward', link: '/docker/ward/' }
+                { text: 'Grafana', link: '/docker/grafana/' }
               ]
             },
             {
               text: '网络访问',
               items: [
-                { text: 'Nginx-UI', link: '/docker/nginx-ui/' },
-                { text: 'NixVis', link: '/docker/nixvis/' },
-                { text: 'Nginx Proxy Manager', link: '/docker/nginx-proxy-manager/' }
+                { text: 'Nginx-UI', link: '/docker/nginx-ui/' }
               ]
             },
             {
               text: '文件管理',
               items: [
-                { text: 'AList', link: '/docker/alist/' },
-                { text: 'FileBrowser', link: '/docker/filebrowser/' },
-                { text: 'NextCloud', link: '/docker/nextcloud/' }
+                { text: 'FileBrowser', link: '/docker/filebrowser/' }
               ]
             },
             {

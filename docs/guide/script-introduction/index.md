@@ -391,7 +391,7 @@
 **前置条件**：必须先安装 Firewalld（「4.2、安装 Firewalld」）。
 
 **注意事项**：
-- 威胁等级越高，封禁的 IP 数量可能越多
+- 威胁等级数值越高，筛选越严格，最终封禁的 IP 数量越少；数值越低，策略越宽松，封禁的 IP 数量越多
 - 首次运行会下载并封禁威胁 IP，可能需要一些时间
 - 支持手动执行更新脚本：`/etc/firewalld/ipthreat/firewalld_ipthreat.sh`
 
@@ -614,12 +614,8 @@
 
 2. **Docker 容器**：
    - 检查以下容器运行状态：
-     - `ddns-go` - http://服务器IP:9876
      - `dockge` - http://服务器IP:5001
-     - `nginx-ui` - http://服务器IP:12800
      - `portainer` - https://服务器IP:9443
-     - `portainer_zh-cn` - http://服务器IP:9999
-     - `scrutiny` - http://服务器IP:9626
    - 仅显示正在运行的容器
 
 3. **安全服务提示**：
@@ -641,7 +637,6 @@
 
 **支持的域名**：
 - **GitHub 相关**：github.com、raw.githubusercontent.com、github.io 等 30+ 个 GitHub 域名
-- **Docker 相关**：docker.com、registry.docker.io 等 Docker 服务域名
 - **TMDB 相关**：themoviedb.org、api.themoviedb.org 等 TMDB 服务域名
 - **其他服务**：OpenSubtitles、Fanart 等
 
