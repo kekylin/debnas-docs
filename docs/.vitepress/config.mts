@@ -97,6 +97,7 @@ export default defineConfig({
             {
               text: '系统监测',
               items: [
+                { text: 'Beszel', link: '/docker/beszel/' },
                 { text: 'Grafana', link: '/docker/grafana/' }
               ]
             },
