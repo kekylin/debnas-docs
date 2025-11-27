@@ -10,7 +10,7 @@
 
 - 系统：Debian 12.x/13.x（amd64），已安装 Docker Engine 与 systemd。
 - 目的：在受限网络下，通过企业/个人 HTTP(S) 代理加速拉取镜像、转发 API 请求。
-- 约束：以下命令必须以 root 身份运行。本指南仅设置 Docker daemon 与客户端本地代理，不涉及容器内部代理。
+- 约束：以下命令必须以 root 身份运行。本指南涵盖 Docker daemon/客户端代理配置（用于拉取镜像）以及容器运行期代理配置（用于容器内部网络访问）。
 
 ---
 
@@ -29,8 +29,8 @@ cat <<'CONF' > ~/.docker/config.json
 {
   "proxies": {
     "default": {
-      "httpProxy": "http://192.168.10.5:7890/",
-      "httpsProxy": "http://192.168.10.5:7890/",
+      "httpProxy": "http://192.168.10.5:7890",
+      "httpsProxy": "http://192.168.10.5:7890",
       "noProxy": "localhost,127.0.0.1,::1,.lan,192.168.10.0/24"
     }
   }
@@ -39,7 +39,7 @@ CONF
 ```
 
 > `~` 代表当前登录用户的家目录，例如 root 为 `/root`，普通用户 `nas` 则是 `/home/nas`。请在自己的家目录下执行上述命令；若该用户目录缺少 `.docker`，命令会自动创建。  
-> 如果代理需要账号密码，可以写成 `http://user:pass@proxy.example.com:port/`。  
+> 如果代理需要账号密码，可以写成 `http://user:pass@proxy.example.com:port`。  
 > **注意**：此配置仅影响 Docker 客户端与镜像仓库之间的流量，不会让容器内部访问互联网时自动走代理。若容器运行期也要走代理，请参照第 4 章为容器设置环境变量。
 
 ### 2.2 使用说明与常见问答
@@ -100,8 +100,8 @@ cat <<'CONF' > /etc/docker/daemon.json
   ],
   "proxies": {
     "default": {
-      "httpProxy": "http://192.168.10.5:7890/",
-      "httpsProxy": "http://192.168.10.5:7890/",
+      "httpProxy": "http://192.168.10.5:7890",
+      "httpsProxy": "http://192.168.10.5:7890",
       "noProxy": "localhost,127.0.0.1,::1,192.168.10.0/24"
     }
   }
@@ -137,8 +137,8 @@ docker run -d \
   -v /opt/docker/jellyfin/config:/config \
   -v /opt/docker/jellyfin/cache:/cache \
   -v /media:/media \
-  -e HTTP_PROXY=http://192.168.10.5:7890/ \
-  -e HTTPS_PROXY=http://192.168.10.5:7890/ \
+  -e HTTP_PROXY=http://192.168.10.5:7890 \
+  -e HTTPS_PROXY=http://192.168.10.5:7890 \
   -e NO_PROXY=localhost,127.0.0.1,::1,.lan,192.168.10.0/24 \
   jellyfin/jellyfin:latest
 ```
@@ -160,8 +160,8 @@ services:
       - /opt/docker/jellyfin/cache:/cache
       - /media:/media
     environment:
-      HTTP_PROXY: http://192.168.10.5:7890/
-      HTTPS_PROXY: http://192.168.10.5:7890/
+      HTTP_PROXY: http://192.168.10.5:7890
+      HTTPS_PROXY: http://192.168.10.5:7890
       NO_PROXY: localhost,127.0.0.1,::1,.lan,192.168.10.0/24
 ```
 
@@ -170,8 +170,8 @@ services:
 ```bash
 mkdir -p /opt/docker/jellyfin
 cat <<'ENV' > /opt/docker/jellyfin/.env.proxy
-HTTP_PROXY=http://192.168.10.5:7890/
-HTTPS_PROXY=http://192.168.10.5:7890/
+HTTP_PROXY=http://192.168.10.5:7890
+HTTPS_PROXY=http://192.168.10.5:7890
 NO_PROXY=localhost,127.0.0.1,::1,.lan,192.168.10.0/24
 ENV
 ```
