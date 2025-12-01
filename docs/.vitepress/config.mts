@@ -55,6 +55,7 @@ export default defineConfig({
           items: [
             { text: '虚拟机使用教程', link: '/guide/vm-usage/' },
             { text: '虚拟安装黑群晖系统', link: '/guide/synology-vm/' },
+            { text: '虚拟机安装 ImmortalWrt 软路由', link: '/guide/immortalwrt-vm-installation/' },
             { text: '启用SMB文件共享', link: '/guide/smb-sharing/' },
             { text: 'Nginx反代限制国外IP访问', link: '/guide/nginx-foreign-ip-block/' },
             { text: '内网穿透服务Tailscale', link: '/guide/tailscale-tunnel-service/' }

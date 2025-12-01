@@ -218,6 +218,7 @@ docker exec -it jellyfin env | grep -E 'HTTP|NO_PROXY'
 | 容器内依旧无法访问公网 | 确认 `docker exec 容器 env` 中是否存在 `HTTP_PROXY` 等变量；若无，检查 compose `env_file` 是否加载；若有仍失败，说明应用未读取标准变量，需要在程序内部单独设置。 |
 | 业务访问内网资源失败 | 将 NAS/内网域名加入 CLI 或 daemon 的 `noProxy`，示例：`NO_PROXY=localhost,127.0.0.1,::1,.lan,192.168.10.0/24`，并重新加载配置。 |
 
+> 代理地址格式示例：明文认证可写成 `http://192.168.10.5:7890`；若代理要求账号密码，则写成 `http://user:pass@192.168.10.5:7890`，其中 `user:pass` 需进行 URL 编码（例如密码包含 `@` / `#`）。HTTPS 代理同理，将前缀改为 `https://`。  
 > 若代理使用自签名证书，请把 CA 证书安装到主机，并在 `/etc/docker/certs.d/<registry>/ca.crt` 或 `daemon.json` 的 `tlscacert` 中声明，否则 TLS 握手会被拒绝。
 
 ---
