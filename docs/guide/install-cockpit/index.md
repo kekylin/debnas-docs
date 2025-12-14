@@ -9,7 +9,7 @@ Cockpit 从版本 10 （Buster） 开始在 Debian 中可用。
 apt install -t ${VERSION_CODENAME}-backports cockpit pcp python3-pcp -y
 ```
 ## 2、安装Cockpit附属组件
-**官方组件**
+**官方组件**  
 1、虚拟机，在浏览器中创建、运行和管理虚拟机。（按需安装，非必要插件）
 ```
 . /etc/os-release
@@ -20,12 +20,7 @@ apt install -t ${VERSION_CODENAME}-backports cockpit-machines -y
 . /etc/os-release
 apt install -t ${VERSION_CODENAME}-backports cockpit-podman -y
 ```
-3、cockpit-pcp，Cockpit面板的历史数据插件。
-```
-. /etc/os-release
-sudo apt install -t ${VERSION_CODENAME}-backports cockpit-pcp -y
-```
-**第三方组件**
+**第三方组件**  
 配置45Drives Repo安装脚本，安装脚本将自动检测您的发行版并将适当的文件添加到您的系统。该脚本还将保存任何与 45Drives 相关的旧存储库（如果存在）。
 下面的命令将下载并运行脚本，而不会在您的系统上留下任何东西！
 ```
