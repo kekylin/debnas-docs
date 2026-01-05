@@ -29,20 +29,69 @@
 
 ### 1.1、配置软件源
 
-**功能说明**：使用 chsrc 工具进行软件源管理，支持 Debian 12/13 系统。自动将旧版 `sources.list` 转换为 DEB822 格式（`/etc/apt/sources.list.d/debian.sources`）。
+**功能说明**：自动配置 Debian 软件源（DEB822 格式），支持 Debian 12/13 系统。自动将旧版 `sources.list` 转换为 DEB822 格式（`/etc/apt/sources.list.d/debian.sources`）。
 
-**使用方式**：
-- **测速换源**：自动测速并切换至最快的镜像源（推荐）
-- **自选镜像源**：从可用镜像源列表中选择指定镜像源
-- **自定义镜像源**：手动输入自定义镜像源 URL（必须包含 `/debian`，格式：`https://镜像域名/debian`）
+**镜像源列表**（按优先级排序）：
 
-**特殊模式**：
-- 支持无人值守模式（`--auto`），自动使用维护团队测速第一的镜像源，适用于一键部署场景
+脚本支持以下国内镜像源，按优先级从高到低依次检测：
+
+1. **校园网联合镜像站** - `https://mirrors.cernet.edu.cn`
+2. **清华大学开源软件镜像站** - `https://mirrors.tuna.tsinghua.edu.cn`
+3. **中国科学技术大学开源软件镜像站** - `https://mirrors.ustc.edu.cn`
+4. **阿里云开源镜像站** - `https://mirrors.aliyun.com`
+5. **华为云开源镜像站** - `https://mirrors.huaweicloud.com`
+
+**回退镜像源**：
+- **Debian 官方镜像站** - `https://deb.debian.org`（当所有国内镜像源均不可用时使用）
+
+**镜像源选择规则**：
+
+1. **优先级检测**：按上述顺序依次检测每个国内镜像源的可用性
+2. **连通性检测**：
+   - 检测方式：访问 `${镜像源URL}/debian/dists/${系统版本代号}/Release` 文件
+   - 超时时间：5 秒
+   - 检测工具：使用 `wget --spider` 命令（静默模式，仅检测可达性）
+   - 重试次数：1 次（快速失败，避免长时间等待）
+3. **选择策略**：
+   - **优先策略**：选择第一个检测到可用的国内镜像源（按优先级顺序）
+   - **回退策略**：如果所有国内镜像源均不可用，则使用 Debian 官方镜像站
+   - **强制回退**：即使官方镜像站检测失败，也会使用官方源作为回退配置（网络可能在后续恢复）
+4. **结果反馈**：脚本会显示选定的镜像站中文名称，便于用户了解当前使用的镜像源
+
+**功能特性**：
+
+- **自动依赖检查**：自动检测并安装缺失的依赖（`wget`、`apt`）
+- **系统兼容性检查**：仅支持 Debian 12/13 系统，其他系统自动退出
+- **自动备份旧配置**：
+  - 备份 `/etc/apt/sources.list` → `/etc/apt/sources.list.bak`（如存在）
+  - 备份 `/etc/apt/sources.list.d/debian.sources` → `/etc/apt/sources.list.d/debian.sources.bak`（如存在）
+  - 原子操作，防止多次运行产生 `.bak.bak` 文件
+- **DEB822 格式配置**：
+  - **标准仓库**（Standard Repository）：
+    - URIs：`${镜像源URL}/debian`
+    - Suites：`${系统版本代号}`、`${系统版本代号}-updates`、`${系统版本代号}-backports`
+    - Components：`main`、`contrib`、`non-free`、`non-free-firmware`
+    - Signed-By：`/usr/share/keyrings/debian-archive-keyring.gpg`
+  - **安全仓库**（Security Repository）：
+    - URIs：`${镜像源URL}/debian-security`
+    - Suites：`${系统版本代号}-security`
+    - Components：`main`、`contrib`、`non-free`、`non-free-firmware`
+    - Signed-By：`/usr/share/keyrings/debian-archive-keyring.gpg`
+- **自动更新软件包列表**：
+  - 执行 `apt update` 更新软件包列表
+  - 更新前会再次检测镜像源连通性
+  - 更新成功会显示镜像站中文名称
+  - 更新失败会提示网络连接可能异常
+
+**配置文件位置**：
+- 输出文件：`/etc/apt/sources.list.d/debian.sources`
+- 备份文件：`/etc/apt/sources.list.bak`、`/etc/apt/sources.list.d/debian.sources.bak`
 
 **注意事项**：
-- 脚本会自动备份旧版 `sources.list` 文件
-- 转换后的 DEB822 格式包含 main、contrib、non-free、non-free-firmware 组件
-- 自动配置安全更新源（`${CODENAME}-security`）
+- 脚本会自动备份旧版配置文件，不会丢失原有配置
+- 如果所有镜像源均不可用，会使用官方源作为回退配置（即使检测失败也会配置）
+- 网络检测失败时会提示检查网络连接、DNS 配置或网关设置
+- 配置完成后会显示选定的镜像站中文名称，便于确认当前使用的镜像源
 
 ### 1.2、安装基础工具
 
@@ -56,11 +105,13 @@
 - `exim4` - 邮件服务（用于系统通知）
 - `gnupg` - GPG 加密工具
 - `apt-transport-https`、`ca-certificates` - HTTPS 支持
+- `udisks2-lvm2` - 磁盘管理工具
 - `smartmontools` - 硬盘健康监测工具
 
 **自动配置**：
 - 自动将第一个创建的普通用户（UID >= 1000，排除 nobody）加入 sudo 组
 - 自动执行 `apt update` 更新软件包列表
+- 如果用户已在 sudo 组中，会跳过操作
 
 **使用场景**：系统初始化时首先执行，为后续功能提供基础环境。
 
@@ -82,8 +133,9 @@
   - Identities - 用户身份管理
 
 **智能下载**：
-- 自动选择最优 GitHub 镜像源下载组件（支持多个镜像站，自动测速）
-- 支持镜像站：ghfast.top、gitproxy.click、hubproxy.jiaozi.live、gh.llkk.cc、gh-proxy.top
+- 自动选择最优 GitHub 镜像源下载组件（支持多个镜像站，并发测速选择延迟最低的镜像站）
+- 支持镜像站：ghfast.top、hubproxy.jiaozi.live、gh-proxy.top
+- 镜像站选择机制：并发测试所有镜像站和 GitHub 源站的延迟，自动选择延迟最低的地址
 
 **自动配置**：
 - 配置 Cockpit 首页展示信息
@@ -107,7 +159,7 @@
 - 安装 `cockpit-machines` 组件（虚拟机管理组件）
 - 启用 IP 包转发功能（`net.ipv4.ip_forward = 1`），解决虚拟机 IP 分配问题
 - 自动配置 APT Pinning（如未配置）
-- 自动重启 Cockpit 服务使新组件生效
+- 自动尝试重启 Cockpit 服务使新组件生效（使用 `systemctl try-restart`）
 
 **使用场景**：需要在 Cockpit 中管理虚拟机时使用。
 
@@ -128,7 +180,7 @@
 **配置效果**：
 - 可通过外网域名访问：`https://your-domain.com:9090`
 - 可通过内网 IP 访问：`https://内网IP:9090`
-- 自动重启 Cockpit 服务使配置生效
+- 自动尝试重启 Cockpit 服务使配置生效（使用 `systemctl try-restart`）
 
 **使用场景**：需要通过外网访问 Cockpit 管理界面时使用。
 
@@ -143,7 +195,7 @@
 **操作内容**：
 - 删除 `/etc/cockpit/cockpit.conf` 中的 Origins 配置
 - 删除后可通过内网任意 IP 地址访问
-- 自动重启 Cockpit 服务使配置生效
+- 自动尝试重启 Cockpit 服务使配置生效（使用 `systemctl try-restart`）
 
 **使用场景**：
 - 外网访问域名变更，需要重新配置时
@@ -158,7 +210,8 @@
 - 将系统网络管理工具从 `network` 切换为 `NetworkManager`
 - 注释 `/etc/network/interfaces` 中的配置，避免与 NetworkManager 冲突
 - 配置 NetworkManager 的 `managed=true`
-- 重启 NetworkManager 和 Cockpit 服务
+- 重启 NetworkManager 服务
+- 自动尝试重启 Cockpit 服务（使用 `systemctl try-restart`）
 
 **使用场景**：需要在 Cockpit 面板中管理网络配置时使用。
 
@@ -361,30 +414,33 @@
 
 ### 4.4、IP 封禁工具
 
-**功能说明**：安装并配置基于 IPThreat 威胁情报的 IP 封禁工具，自动封禁已知威胁 IP。
+**功能说明**：Firewalld-IPThreat 自动化威胁情报更新系统，基于 IPThreat 威胁情报数据库自动封禁已知威胁 IP。
 
 **功能特性**：
 - 基于 IPThreat 威胁情报数据库，自动获取威胁 IP 列表
 - 支持自动更新威胁 IP 列表，通过 Firewalld 实现 IP 封禁
 - 支持 IPv4 和 IPv6 封禁
-- 自动管理 ipset 集合，支持大量 IP 地址封禁（最多 65536 个 IP）
+- 自动管理 ipset 集合，支持大量 IP 地址封禁（最多 65536 个 CIDR 条目）
+- 支持 IP 范围格式（最大 256 个 IP）
+- 支持定时任务模式（`--cron` 参数），可独立运行
 
 **配置选项**：
 - **威胁等级**：可配置威胁等级（默认 50，范围 0-100）
-- **更新频率**：可配置更新频率（默认每天 0、6、12、18 点更新）
+- **更新频率**：可配置更新频率（默认每天 0 点更新，支持自定义 Cron 表达式）
 - **封禁区域**：使用 Firewalld 的 drop 区域进行封禁
 
 **工作流程**：
 1. 从 IPThreat 下载威胁 IP 列表（根据威胁等级）
-2. 验证 IP 地址有效性
+2. 验证 IP 地址有效性（支持 CIDR 和 IP 范围格式）
 3. 处理 IP 范围和 CIDR 格式
 4. 通过 Firewalld 的 ipset 功能封禁 IP
 5. 自动创建定时任务，定期更新威胁列表
 
-**配置文件**：
-- `/etc/firewalld/ipthreat/ipthreat.conf` - 主配置文件
-- `/etc/firewalld/ipthreat/firewalld_ipthreat.sh` - 更新脚本
-- `/var/log/firewalld_ipthreat.log` - 操作日志
+**文件位置**：
+- **数据目录**：`/var/lib/firewalld-ipthreat/`
+- **配置文件**：`/var/lib/firewalld-ipthreat/ipthreat.conf`
+- **定时任务脚本**：`/var/lib/firewalld-ipthreat/firewalld_ipthreat.sh`
+- **日志文件**：`/var/log/firewalld-ipthreat.log`
 
 **使用场景**：需要主动防护，封禁已知威胁 IP 时使用。
 
@@ -393,7 +449,8 @@
 **注意事项**：
 - 威胁等级数值越高，筛选越严格，最终封禁的 IP 数量越少；数值越低，策略越宽松，封禁的 IP 数量越多
 - 首次运行会下载并封禁威胁 IP，可能需要一些时间
-- 支持手动执行更新脚本：`/etc/firewalld/ipthreat/firewalld_ipthreat.sh`
+- 支持手动执行更新脚本：`/var/lib/firewalld-ipthreat/firewalld_ipthreat.sh --cron`
+- 定时任务脚本可独立运行，不依赖项目目录结构
 
 ## 五、容器管理
 
@@ -404,9 +461,10 @@
 **智能镜像源选择**：
 - 自动检测系统配置的镜像源，优先使用系统镜像源
 - 如果系统使用 Debian 官方源，则使用 Docker 官方源
-- 如果系统使用国内镜像源，则尝试使用对应的 Docker 镜像源
-- 支持多个备用镜像源（清华大学、中科大、阿里云、腾讯云、华为云）
+- 如果系统使用国内镜像源，则尝试使用对应的 Docker 镜像源（格式：`${系统镜像源}/docker-ce/linux/debian`）
+- 支持多个备用镜像源（按优先级）：校园网联合镜像站、清华大学、中科大、阿里云、华为云
 - 自动测试镜像源可用性，选择最优镜像源
+- 支持 GPG 密钥下载重试机制（最多 3 次）
 
 **安装的组件**：
 - `docker-ce` - Docker 社区版引擎
@@ -416,8 +474,10 @@
 - `docker-compose-plugin` - Docker Compose 插件
 
 **自动配置**：
-- 自动将第一个创建的普通用户（UID >= 1000）加入 docker 组
+- 自动将第一个创建的普通用户（UID 1000，排除 nobody）加入 docker 组
 - 自动启动 Docker 服务并设置为开机自启
+- 使用 DEB822 格式配置 Docker 软件源（`/etc/apt/sources.list.d/docker.sources`）
+- 自动备份旧格式配置文件（如存在）
 
 **系统要求**：
 - 支持 Debian 12/13 系统
@@ -428,10 +488,11 @@
 **注意事项**：
 - 安装前会自动检查系统兼容性和资源情况
 - 用户加入 docker 组后，需要重新登录才能使用 docker 命令（无需 sudo）
+- 脚本会自动处理旧格式的 Docker 软件源配置文件
 
 ### 5.2、镜像加速
 
-**功能说明**：配置 Docker 镜像加速地址，提升国内镜像拉取速度。
+**功能说明**：为 Docker 配置国内镜像加速地址（多源，自动合并，自动重启），提升国内镜像拉取速度。
 
 **镜像加速地址**：
 - `https://docker.m.ixdev.cn`
@@ -439,9 +500,11 @@
 - `https://docker.1panel.live`
 
 **功能特性**：
+- 自动检查 Docker 是否已安装（未安装会提示错误）
 - 自动合并多个镜像加速地址（自动去重）
-- 自动保留已有镜像加速配置
-- 自动重启 Docker 服务使配置生效
+- 自动保留已有镜像加速配置（优先保留已有配置）
+- 自动执行 `systemctl daemon-reload` 和重启 Docker 服务使配置生效
+- 如果配置文件不存在，会自动创建新文件
 
 **配置文件**：`/etc/docker/daemon.json`
 
@@ -449,11 +512,12 @@
 
 **注意事项**：
 - 配置会合并到现有配置中，不会覆盖其他 Docker 配置
-- 如果已有镜像加速配置，新配置会追加到列表中
+- 如果已有镜像加速配置，新配置会追加到列表中（自动去重）
+- 脚本执行前会检查 Docker 是否已安装
 
 ### 5.3、安装应用
 
-**功能说明**：交互式批量安装常用 Docker 容器应用，简化容器部署流程。
+**功能说明**：交互式批量安装常用 Docker 容器应用（仅 compose 方式），简化容器部署流程。
 
 **功能特性**：
 - 交互式菜单选择，支持多选批量安装
@@ -461,15 +525,17 @@
 - 应用列表按字母顺序排序显示
 - 仅支持 Docker Compose 方式部署
 - 自动检测容器是否已存在，避免重复部署
+- 自动检查 Docker 和 curl 依赖
+- 自动检查 compose 目录是否存在
 
 **容器应用**：
 - 具体应用列表见 `config/containers.conf` 配置文件
 - 包括但不限于：dockge、portainer 等常用容器应用
 
 **部署方式**：
-- 使用 `docker compose` 命令部署
+- 使用 `docker compose -p "$key"` 命令部署（指定项目名称）
 - Compose 文件位于 `docker-compose/` 目录
-- 每个容器使用独立的项目名称（project name）
+- 每个容器使用独立的项目名称（project name，对应容器 key）
 
 **使用场景**：需要快速部署常用 Docker 容器应用时使用。
 
@@ -478,6 +544,7 @@
 **注意事项**：
 - 如果容器已存在，会跳过部署
 - 部署过程中会显示详细的日志信息
+- 脚本会自动检查依赖和目录结构
 
 ### 5.4、备份恢复
 
@@ -491,20 +558,24 @@
   - 支持排除指定目录
 
 - **备份流程**：
-  - 备份前自动停止 Docker 服务（确保数据一致性）
+  - 备份前自动停止 Docker 服务（同时停止 `docker.service` 和 `docker.socket`，确保数据一致性）
+  - 使用超时机制（30秒）等待服务完全停止
   - 使用 tar 和 rsync 进行备份
   - 备份后自动启动 Docker 服务
-  - 生成操作日志文件
+  - 生成详细的操作日志文件（包含统计信息、完整性校验等）
 
 - **备份管理**：
   - 支持自定义备份文件存储路径
   - 自动版本管理（备份目录命名：`docker_v1`、`docker_v2` 等）
-  - 生成详细的备份统计信息（文件数量、大小等）
+  - 生成详细的备份统计信息（文件数量、大小、操作前后对比等）
+  - 支持信号处理，中断时会自动恢复 Docker 服务状态
 
 - **配置文件**：
   - 默认配置：`config/docker_backup.conf`
   - 在线配置：https://raw.githubusercontent.com/kekylin/debnas/refs/heads/main/config/docker_backup.conf
-  - 支持自定义配置文件路径
+  - 支持自定义配置文件路径（交互式输入）
+  - **使用默认配置时**：必须交互输入备份路径
+  - **使用自定义配置时**：直接使用配置中的备份路径
 
 **恢复功能**：
 
@@ -513,10 +584,11 @@
   - **增量恢复**：覆盖同名文件，保留目标目录中备份源没有的文件
 
 - **恢复流程**：
-  - 恢复前自动停止 Docker 服务
+  - 恢复前自动停止 Docker 服务（同时停止 `docker.service` 和 `docker.socket`）
+  - 使用超时机制（30秒）等待服务完全停止
   - 使用 rsync 进行文件同步
   - 恢复后自动启动 Docker 服务
-  - 生成操作日志文件
+  - 生成详细的操作日志文件（包含统计信息、完整性校验等）
 
 **使用场景**：
 - 系统迁移：备份 Docker 数据以便迁移到新系统
@@ -528,38 +600,50 @@
 - 备份前请确保有足够的磁盘空间
 - 恢复操作会覆盖目标目录，请谨慎操作
 - 建议在系统维护时间窗口执行备份恢复操作
+- 脚本支持中断恢复，意外中断时会自动恢复 Docker 服务状态
+- 操作日志文件包含详细的统计信息和完整性校验结果
 
 ## 六、系统工具
 
 ### 6.1、检查兼容性
 
-**功能说明**：系统兼容性检查工具，检查系统是否符合脚本运行要求，帮助提前发现潜在问题。
+**功能说明**：系统兼容性检查工具，检查系统是否符合脚本运行要求，帮助提前发现潜在问题。脚本直接运行，无需交互选择。
 
-**检查模式**：
+**检查项目**：
 
-1. **基础检查**：
-   - 系统信息：操作系统版本、架构、主机名、内核版本
-   - 运行指标：系统负载、内存使用、磁盘使用、运行时长
-   - 硬件信息：CPU 型号、核心数、总内存、磁盘分区
-   - 网络状态：网络连通性测试、DNS 解析测试
-   - 资源检查：内存是否 >= 512MB、磁盘空间是否 >= 5GB
+1. **系统检查**：
+   - 系统类型和版本：检查是否为 Debian 12 或更高版本
+   - 系统架构：检查是否为 x86_64（项目主要支持）
 
-2. **增强检查**（在基础检查基础上增加）：
-   - 时间同步：NTP 同步状态检查
-   - 虚拟化支持：CPU 虚拟化能力检查（vmx/svm）
-   - 服务状态：SSH、Cron 等服务运行状态
-   - 安全模块：AppArmor 启用状态
-   - 磁盘健康：SMART 健康状态检查
+2. **资源检查**：
+   - 内存：检查是否 >= 1GB（建议值）
+   - 磁盘空间：检查根分区可用空间是否 >= 10GB（建议值）
+
+3. **网络检查**：
+   - 镜像站连通性：检查 APT 镜像站连通性（按优先级顺序检测）
+   - 检测范围：所有国内镜像站和 Debian 官方镜像站
+   - 检测方式：使用 `curl` 测试镜像站 URL 可达性
+
+4. **服务检查**（推荐，但不强制）：
+   - SSH 服务：检查 SSH 服务运行状态（用于远程管理）
+   - Cron 服务：检查 Cron 服务运行状态（用于定时任务）
 
 **输出内容**：
-- 详细的系统信息报告
-- 检查结论（适合/存在风险）
-- 发现的问题列表
+- 系统信息摘要（系统类型、版本、架构）
+- 资源使用情况（内存、磁盘空间）
+- 网络连通性状态（镜像站可用性）
+- 服务运行状态（SSH、Cron）
+- 检查结论（适合运行项目脚本 / 存在风险）
+- 问题列表（如有）
 
 **使用场景**：
 - 脚本运行前检查系统环境
 - 系统迁移前评估兼容性
-- 故障排查时收集系统信息
+- 快速验证系统是否满足项目运行要求
+
+**注意事项**：
+- 脚本采用最小化检查原则，仅检查项目脚本运行必需项
+- 服务检查为推荐项，不影响脚本运行，但建议启用 SSH 和 Cron 服务
 
 ### 6.2、检查系统更新
 
@@ -633,7 +717,7 @@
 
 ### 6.4、更新 Hosts 文件
 
-**功能说明**：自动更新 `/etc/hosts` 文件，解决 GitHub、Docker、TMDB 等服务的访问问题。
+**功能说明**：自动更新 `/etc/hosts` 文件，通过多 DNS 并行解析和三级连通性检测选择最优 IP 地址，解决 GitHub、Docker、TMDB 等服务的访问问题。
 
 **支持的域名**：
 - **GitHub 相关**：github.com、raw.githubusercontent.com、github.io 等 30+ 个 GitHub 域名
@@ -644,15 +728,17 @@
 - 通过多 DNS 并行解析（AliDNS、TencentDNS、BaiduDNS、DNS114）
 - 三级连通性检测（DNS 解析 → HTTP 连接 → 内容验证）
 - 自动选择最优 IP 地址（每个域名最多保留 1 个 IP）
+- DNS 服务器按固定顺序测试，确保结果一致性
 
 **更新方式**：
 - **单次更新**：立即执行一次更新
-- **定时更新**：支持自定义 Cron 表达式设置定时更新
+- **定时更新**：支持自定义 Cron 表达式设置定时更新（默认每天 0、6、12、18 点更新）
 
 **文件管理**：
 - 自动管理 hosts 文件中的 DebNAS 标记区域
 - 标记区域：`# DebNAS Hosts Start` 到 `# DebNAS Hosts End`
 - 更新时自动替换标记区域内容，不影响其他配置
+- 支持定时任务模式（`auto_update_hosts` 参数）
 
 **使用场景**：
 - 国内环境访问 GitHub、Docker 等服务时使用
@@ -661,6 +747,7 @@
 **注意事项**：
 - 更新会替换标记区域内容，请勿在标记区域内手动添加配置
 - 定时更新需要配置 Cron 任务
+- 定时任务脚本会复制到用户主目录（`~/.debnas_hosts_update.sh`）
 
 ### 6.5、安装 Tailscale
 
@@ -705,6 +792,10 @@
 **操作日志**：
 - 所有 ACL 操作记录到 `/var/log/homenas_acl_manager.log`
 - 日志包含：操作类型、路径、用户/组、权限、时间戳
+
+**临时文件管理**：
+- 使用 `/tmp/debnas/` 目录存储临时文件（自动创建，权限 700）
+- 临时文件自动清理，避免并发冲突和数据泄露
 
 **自动依赖处理**：
 - 自动检测并安装缺失的 ACL 工具（getfacl、setfacl）
@@ -762,7 +853,7 @@
 **功能说明**：自动执行基础环境配置，快速搭建可用的 NAS 系统。
 
 **执行流程**（按顺序自动执行）：
-1. **配置软件源**（无人值守模式）- 使用维护团队测速第一的镜像源
+1. **配置软件源** - 自动检测并选择可用的镜像源
 2. **安装基础工具** - 安装必备软件包并配置 sudo 权限
 3. **安装 Cockpit 面板** - 安装 Web 管理界面
 4. **设置 Cockpit 网络访问** - 切换为 NetworkManager 网络管理
@@ -787,7 +878,7 @@
 **功能说明**：自动执行完整的安全环境配置，包含基础环境 + 安全防护 + 邮件通知。
 
 **执行流程**（按顺序自动执行）：
-1. **配置软件源**（无人值守模式）
+1. **配置软件源** 
 2. **安装基础工具**
 3. **安装 Cockpit 面板**
 4. **设置 Cockpit 网络访问**
